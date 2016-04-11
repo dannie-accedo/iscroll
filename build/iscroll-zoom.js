@@ -1118,9 +1118,9 @@ IScroll.prototype = {
 
 		this.scale = scale;
 
-		this.scrollTo(x, y, 0);
-
 		this._execEvent('zoomMove');
+
+		this.scrollTo(x, y, 0);
 	},
 
 	_zoomEnd: function (e) {
@@ -1211,6 +1211,8 @@ IScroll.prototype = {
 		} else if ( y < this.maxScrollY ) {
 			y = this.maxScrollY;
 		}
+
+		this._execEvent('zoomMove');
 
 		this.scrollTo(x, y, time);
 	},
