@@ -1119,6 +1119,8 @@ IScroll.prototype = {
 		this.scale = scale;
 
 		this.scrollTo(x, y, 0);
+
+		this._execEvent('zoomMove');
 	},
 
 	_zoomEnd: function (e) {
