@@ -4,16 +4,18 @@
 	},
 
 	_zoomStart: function (e) {
-		var c1 = Math.abs( e.touches[0].pageX - e.touches[1].pageX ),
-			c2 = Math.abs( e.touches[0].pageY - e.touches[1].pageY );
+		if (this.enabled) {
+			var c1 = Math.abs( e.touches[0].pageX - e.touches[1].pageX ),
+				c2 = Math.abs( e.touches[0].pageY - e.touches[1].pageY );
 
-		this.touchesDistanceStart = Math.sqrt(c1 * c1 + c2 * c2);
-		this.startScale = this.scale;
+			this.touchesDistanceStart = Math.sqrt(c1 * c1 + c2 * c2);
+			this.startScale = this.scale;
 
-		this.originX = Math.abs(e.touches[0].pageX + e.touches[1].pageX) / 2 + this.wrapperOffset.left - this.x;
-		this.originY = Math.abs(e.touches[0].pageY + e.touches[1].pageY) / 2 + this.wrapperOffset.top - this.y;
+			this.originX = Math.abs(e.touches[0].pageX + e.touches[1].pageX) / 2 + this.wrapperOffset.left - this.x;
+			this.originY = Math.abs(e.touches[0].pageY + e.touches[1].pageY) / 2 + this.wrapperOffset.top - this.y;
 
-		this._execEvent('zoomStart');
+			this._execEvent('zoomStart');
+		}
 	},
 
 	_zoom: function (e) {
@@ -102,73 +104,77 @@
 	},
 
 	zoom: function (scale, x, y, time) {
-		if ( scale < this.options.zoomMin ) {
-			scale = this.options.zoomMin;
-		} else if ( scale > this.options.zoomMax ) {
-			scale = this.options.zoomMax;
+		if (this.enabled) {
+			if ( scale < this.options.zoomMin ) {
+				scale = this.options.zoomMin;
+			} else if ( scale > this.options.zoomMax ) {
+				scale = this.options.zoomMax;
+			}
+
+			if ( scale == this.scale ) {
+				return;
+			}
+
+			var relScale = scale / this.scale;
+
+			x = x === undefined ? this.wrapperWidth / 2 : x;
+			y = y === undefined ? this.wrapperHeight / 2 : y;
+			time = time === undefined ? 300 : time;
+
+			x = x + this.wrapperOffset.left - this.x;
+			y = y + this.wrapperOffset.top - this.y;
+
+			x = x - x * relScale + this.x;
+			y = y - y * relScale + this.y;
+
+			this.scale = scale;
+
+			this.refresh();		// update boundaries
+
+			if ( x > 0 ) {
+				x = 0;
+			} else if ( x < this.maxScrollX ) {
+				x = this.maxScrollX;
+			}
+
+			if ( y > 0 ) {
+				y = 0;
+			} else if ( y < this.maxScrollY ) {
+				y = this.maxScrollY;
+			}
+
+			this._execEvent('zoomMove');
+
+			this.scrollTo(x, y, time);
 		}
-
-		if ( scale == this.scale ) {
-			return;
-		}
-
-		var relScale = scale / this.scale;
-
-		x = x === undefined ? this.wrapperWidth / 2 : x;
-		y = y === undefined ? this.wrapperHeight / 2 : y;
-		time = time === undefined ? 300 : time;
-
-		x = x + this.wrapperOffset.left - this.x;
-		y = y + this.wrapperOffset.top - this.y;
-
-		x = x - x * relScale + this.x;
-		y = y - y * relScale + this.y;
-
-		this.scale = scale;
-
-		this.refresh();		// update boundaries
-
-		if ( x > 0 ) {
-			x = 0;
-		} else if ( x < this.maxScrollX ) {
-			x = this.maxScrollX;
-		}
-
-		if ( y > 0 ) {
-			y = 0;
-		} else if ( y < this.maxScrollY ) {
-			y = this.maxScrollY;
-		}
-
-		this._execEvent('zoomMove');
-
-		this.scrollTo(x, y, time);
 	},
 
 	_wheelZoom: function (e) {
-		var wheelDeltaY,
-			deltaScale,
-			that = this;
+		if (this.enabled) {
+			var wheelDeltaY,
+				deltaScale,
+				that = this;
 
-		// Execute the zoomEnd event after 400ms the wheel stopped scrolling
-		clearTimeout(this.wheelTimeout);
-		this.wheelTimeout = setTimeout(function () {
-			that._execEvent('zoomEnd');
-		}, 400);
+			// Execute the zoomEnd event after 400ms the wheel stopped scrolling
+			clearTimeout(this.wheelTimeout);
+			this.wheelTimeout = setTimeout(function () {
+				that._execEvent('zoomEnd');
+			}, 400);
 
-		if ( 'deltaX' in e ) {
-			wheelDeltaY = -e.deltaY / Math.abs(e.deltaY);
-		} else if ('wheelDeltaX' in e) {
-			wheelDeltaY = e.wheelDeltaY / Math.abs(e.wheelDeltaY);
-		} else if('wheelDelta' in e) {
-			wheelDeltaY = e.wheelDelta / Math.abs(e.wheelDelta);
-		} else if ('detail' in e) {
-			wheelDeltaY = -e.detail / Math.abs(e.wheelDelta);
-		} else {
-			return;
+			if ( 'deltaX' in e ) {
+				wheelDeltaY = -e.deltaY / Math.abs(e.deltaY);
+			} else if ('wheelDeltaX' in e) {
+				wheelDeltaY = e.wheelDeltaY / Math.abs(e.wheelDeltaY);
+			} else if('wheelDelta' in e) {
+				wheelDeltaY = e.wheelDelta / Math.abs(e.wheelDelta);
+			} else if ('detail' in e) {
+				wheelDeltaY = -e.detail / Math.abs(e.wheelDelta);
+			} else {
+				return;
+			}
+
+			deltaScale = this.scale + wheelDeltaY / 5;
+
+			this.zoom(deltaScale, e.pageX, e.pageY, 0);
 		}
-
-		deltaScale = this.scale + wheelDeltaY / 5;
-
-		this.zoom(deltaScale, e.pageX, e.pageY, 0);
 	},
