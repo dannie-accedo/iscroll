@@ -22,7 +22,6 @@ function IScroll (el, options) {
 
 		preventDefault: true,
 		preventDefaultException: { tagName: /^(INPUT|TEXTAREA|BUTTON|SELECT)$/ },
-		preventScrollingOn: { className: /^(iscroll\-disabled)$/ },
 
 		HWCompositing: true,
 		useTransition: true,
@@ -126,10 +125,6 @@ IScroll.prototype = {
 		}
 
 		if ( !this.enabled || (this.initiated && utils.eventType[e.type] !== this.initiated) ) {
-			return;
-		}
-
-		if (utils.preventDefaultException(e.target, this.options.preventScrollingOn)) {
 			return;
 		}
 
