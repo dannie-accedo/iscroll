@@ -20,6 +20,10 @@ function loaded () {
 		mouseWheel: true,
 		wheelAction: 'zoom'
 	});
+
+	setTimeout(function () {
+		myScroll.zoom(1.5, 0, 0, 500);
+	}, 1500);
 }
 
 document.addEventListener('touchmove', function (e) { e.preventDefault(); }, false);
