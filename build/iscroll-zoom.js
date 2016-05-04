@@ -1217,7 +1217,7 @@ IScroll.prototype = {
 			}
 
 			this._execEvent('zoomMove');
-			console.log(time);
+
 			this.scrollTo(x, y, time);
 		}
 	},
